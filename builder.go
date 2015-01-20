@@ -65,6 +65,9 @@ func GetJobs(db *sql.DB) (Jobs, error) {
 	var jobs = Jobs{}
 
 	rows, err := db.Query(`SELECT jobs.id, created, title, descr, port, diffdata FROM jobs left join diffs on (diffs.id = jobs.diff) where active = true`)
+	if err != nil {
+		return nil, err
+	}
 
 	defer rows.Close()
 
