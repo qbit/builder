@@ -75,7 +75,6 @@ func GetJobs(db *sql.DB) (Jobs, error) {
 		if err != nil {
 			return nil, err
 		}
-		rows.Scan(&job.Id, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata)
 		jobs = append(jobs, &job)
 	}
 
