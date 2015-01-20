@@ -16,11 +16,44 @@ const templateStr = `
 <html>
 <head>
 <title>Builder</title>
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<style>
+.code {
+    display: none
+}
+</style>
 </head>
 <body>
-<table id="jobs">
-
+<table id="jobs" class="table table-striped">
+<thead>
+  <th>ID</th>
+  <th>Title</th>
+  <th>Descriptiton</th>
+  <th>Port</th>
+  <th>Created</th>
+  <th>Status</th>
+  <th>Diff</th>
+</thead>
+{{range .}}
+<tr>
+   <td>{{.Id}}</td>
+   <td>{{.Title}}</td>
+   <td>{{.Descr}}</td>
+   <td>{{.Port}}</td>
+   <td>{{.Created}}</td>
+   <td>{{.Status}}</td>
+   <td class="codeParent">diff<pre class="code">{{.Diffdata}}</pre></td>
+</tr>
+{{end}}
 </table>
+<script>
+$('.codeParent').click(function() {
+    $(this).find('.code').toggle();
+});
+</script>
 </body>
 </html>
 `

@@ -13,8 +13,10 @@ type Job struct {
 	Descr    string
 	Port     string
 	Diff     int
+	Statid   int
 	Active   bool
 	Diffdata string
+	Status   string
 }
 
 type Diff struct {
@@ -54,10 +56,23 @@ func CreateDiff(db *sql.DB, diff string) (int, error) {
 
 //func GetJobs(db *sql.DB) (*sql.Rows, error) {
 func GetJobs(db *sql.DB) (Jobs, error) {
-	var job = Job{}
 	var jobs = Jobs{}
 
-	rows, err := db.Query(`SELECT jobs.id, created, title, descr, port, diffdata FROM jobs left join diffs on (diffs.id = jobs.diff) where active = true`)
+	rows, err := db.Query(`
+SELECT
+ jobs.id,
+ created,
+ title,
+ descr,
+ port,
+ diffdata,
+ stat.status
+FROM
+ jobs
+ left join diffs on (diffs.id = jobs.diff)
+ left join stat on (stat.id = jobs.status)
+where
+active = true`)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +80,8 @@ func GetJobs(db *sql.DB) (Jobs, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&job.Id, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata)
+		var job = Job{}
+		err := rows.Scan(&job.Id, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata, &job.Status)
 		if err != nil {
 			return nil, err
 		}
