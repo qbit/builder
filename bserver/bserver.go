@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-var templ = template.Must(template.New("qr").Parse(templateStr))
+var templ = template.Must(template.New("builder").Parse(templateStr))
 
 const templateStr = `
 <html>
@@ -18,13 +18,14 @@ const templateStr = `
 <title>Builder</title>
 </head>
 <body>
+<table id="jobs">
 
+</table>
 </body>
 </html>
 `
 
 func StatusUpdate(res http.ResponseWriter, req *http.Request) {
-	// receive the output of a given job
 	vars := mux.Vars(req)
 	job := vars["job"]
 
@@ -32,10 +33,7 @@ func StatusUpdate(res http.ResponseWriter, req *http.Request) {
 }
 
 func ShowJobs(res http.ResponseWriter, req *http.Request) {
-	// Send a list of jobs for a host to build
-
 	db, err := builder.Connect()
-
 	if err != nil {
 		log.Fatalf("Can't connect to DB: %v", err)
 	}

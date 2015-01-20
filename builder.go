@@ -36,30 +36,24 @@ func Connect() (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return db, nil
 }
 
 func CreateJob(db *sql.DB, job *Job) (int, error) {
 	// insert diff first, then do this below
 	var id int
-
 	err := db.QueryRow(`INSERT INTO jobs (title, descr, port, diff) values ($1, $2, $3, $4) returning id`, job.Title, job.Descr, job.Port, job.Diff).Scan(&id)
-
 	return id, err
 }
 
 func CreateDiff(db *sql.DB, diff string) (int, error) {
 	var id int
-
 	err := db.QueryRow(`INSERT INTO diffs (id, diffdata) values (DEFAULT, $1) RETURNING id`, diff).Scan(&id)
-
 	return id, err
 }
 
 //func GetJobs(db *sql.DB) (*sql.Rows, error) {
 func GetJobs(db *sql.DB) (Jobs, error) {
-
 	var job = Job{}
 	var jobs = Jobs{}
 
