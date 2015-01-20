@@ -61,8 +61,19 @@ $('.codeParent').click(function() {
 func StatusUpdate(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	job := vars["job"]
+	status := vars["status"]
 
-	fmt.Println("Status for '%s'", job)
+	db, err := builder.Connect()
+	if err != nil {
+		log.Fatalf("Can't connect to DB: %v", err)
+	}
+
+	row, err := db.Query(`update jobs set status = $1 where id = $2`, status, job)
+	if err != nil {
+		log.Fatalf("Can't update status")
+	}
+
+	log.Printf("%v", row)
 }
 
 func ShowJobs(res http.ResponseWriter, req *http.Request) {
@@ -98,7 +109,7 @@ func SendWork(res http.ResponseWriter, req *http.Request) {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/status/{job}", StatusUpdate)
+	r.HandleFunc("/status/{job}/{status}", StatusUpdate)
 	r.HandleFunc("/jobs", SendWork)
 	r.HandleFunc("/", ShowJobs)
 
