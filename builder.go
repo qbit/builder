@@ -33,7 +33,6 @@ func (jobs *Jobs) New() interface{} {
 
 func Connect() (*sql.DB, error) {
 	db, err := sql.Open("postgres", "user=postgres dbname=qbit sslmode=disable")
-
 	if err != nil {
 		return nil, err
 	}
@@ -73,16 +72,11 @@ func GetJobs(db *sql.DB) (Jobs, error) {
 
 	for rows.Next() {
 		err := rows.Scan(&job.Id, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata)
-
 		if err != nil {
 			return nil, err
 		}
 		rows.Scan(&job.Id, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata)
 		jobs = append(jobs, &job)
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	return jobs, nil
