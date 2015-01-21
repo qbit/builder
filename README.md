@@ -3,25 +3,25 @@ builder
 
 Set of tools for doing CI type builds for OpenBSD ports
 
-= Plan =
+### Plan
 
 This project should result in a three component app, server, cli and
 daemon.
 
-== bserver ==
+### bserver
 
 Will keep track of jobs and their associated status (stati?). New jobs
 will be added via a POST req that includes: title, desc, port and a
 diff to be tested.
 
-== bdaemon ==
+### bdaemon
 
 This bit will fire requests to bserver asking for grabable jobs, pull
 down said job.. apply the diff.. and run a dpb against the specific port.
 
 Once a build is done, the status will be reported back to bserver.
 
-== bcli ==
+### bcli
 
 This app will be used to register new jobs:
 
