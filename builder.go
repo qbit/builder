@@ -3,6 +3,7 @@ package builder
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"log"
 	"time"
 )
 
@@ -23,6 +24,11 @@ type Diff struct {
 	Diffdata string
 }
 
+type Resp struct {
+	JobID int
+	Error string
+}
+
 type Jobs []*Job
 
 /*
@@ -32,6 +38,12 @@ func (jobs *Jobs) New() interface{} {
 	return j
 }
 */
+
+func LogFail(err error, msg string) {
+	if err != nil {
+		log.Fatal(msg, err)
+	}
+}
 
 func Connect() (*sql.DB, error) {
 	db, err := sql.Open("postgres", "user=postgres dbname=qbit sslmode=disable")

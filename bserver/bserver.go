@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -64,6 +66,7 @@ func StatusUpdate(res http.ResponseWriter, req *http.Request) {
 	status := vars["status"]
 
 	db, err := builder.Connect()
+	defer db.Close()
 	if err != nil {
 		log.Fatalf("Can't connect to DB: %v", err)
 	}
@@ -73,35 +76,70 @@ func StatusUpdate(res http.ResponseWriter, req *http.Request) {
 		log.Fatalf("Can't update status")
 	}
 
-	log.Printf("%v", row)
+	defer db.Close()
+
+	if err := json.NewEncoder(res).Encode(row); err != nil {
+		panic(err)
+	}
 }
 
 func ShowJobs(res http.ResponseWriter, req *http.Request) {
 	db, err := builder.Connect()
-	if err != nil {
-		log.Fatalf("Can't connect to DB: %v", err)
-	}
+	defer db.Close()
+	builder.LogFail(err, "Can't connect to DB: %v")
 
 	jobs, err := builder.GetJobs(db)
-	if err != nil {
-		log.Fatalf("Can't get jobs: %v", err)
-	}
+	builder.LogFail(err, "Can't get jobs: %v")
 
 	templ.Execute(res, jobs)
 }
 
 func SendWork(res http.ResponseWriter, req *http.Request) {
 	db, err := builder.Connect()
-	if err != nil {
-		log.Fatalf("Can't connect tot DB: %v", err)
-	}
+	defer db.Close()
+	builder.LogFail(err, "Can't connect to DB: %v")
 
 	jobs, err := builder.GetJobs(db)
-	if err != nil {
-		log.Fatalf("Can't get jobs: %v", err)
-	}
+	builder.LogFail(err, "Can't get jobs: %v")
 
 	if err := json.NewEncoder(res).Encode(jobs); err != nil {
+		panic(err)
+	}
+}
+
+func NewJob(res http.ResponseWriter, req *http.Request) {
+	var resp = builder.Resp{}
+	body, err := ioutil.ReadAll(io.LimitReader(req.Body, 1048576))
+	if err := req.Body.Close(); err != nil {
+		resp.Error = err.Error()
+	}
+
+	var job = builder.Job{}
+	if err := json.Unmarshal(body, &job); err != nil {
+		panic(err)
+	}
+
+	db, err := builder.Connect()
+	defer db.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	//	var job = builder.Job{Title: title, Descr: desc, Port: port, Diffdata: diffdata}
+	diffid, err := builder.CreateDiff(db, string(job.Diffdata))
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	job.Diff = diffid
+	jobid, err := builder.CreateJob(db, &job)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	resp.JobID = jobid
+
+	if err := json.NewEncoder(res).Encode(resp); err != nil {
 		panic(err)
 	}
 }
@@ -110,6 +148,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/status/{job}/{status}", StatusUpdate)
+	r.HandleFunc("/new", NewJob).Methods("POST")
 	r.HandleFunc("/jobs", SendWork)
 	r.HandleFunc("/", ShowJobs)
 
