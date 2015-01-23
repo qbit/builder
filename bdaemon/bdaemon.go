@@ -16,6 +16,8 @@ import (
 )
 
 func MakePatch(job *builder.Job) string {
+	// Turns out I don't need to do this.
+	// I will keep it around for possible use later
 	randBytes := make([]byte, 16)
 	rand.Read(randBytes)
 	filename := filepath.Join(os.TempDir(), hex.EncodeToString(randBytes)+".diff")
@@ -50,10 +52,6 @@ func ApplyPatch(dir string, patch string) bool {
 	}
 	cmd := exec.Command("/usr/bin/patch", "-p0", "-E")
 	cmd.Stdin = strings.NewReader(patch)
-	//	err = cmd.Run()
-	//	if err != nil {
-	//		log.Fatalf("Failed to run: %v", err)
-	//}
 	err = cmd.Start()
 	if err != nil {
 		log.Fatal(err)
