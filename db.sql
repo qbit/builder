@@ -4,7 +4,7 @@ drop table if exists arches;
 drop table if exists diffs;
 
 CREATE TABLE arches (id serial not null unique, arch text not null unique);
-CREATE TABLE diffs (id serial not null unique, diffdata text not null);
+CREATE TABLE diffs (id serial not null unique, diffdata text not null unique);
 CREATE TABLE stat (
        id serial not null unique,
        status text unique
