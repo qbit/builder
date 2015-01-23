@@ -102,6 +102,8 @@ func SendWork(res http.ResponseWriter, req *http.Request) {
 	jobs, err := builder.GetJobs(db)
 	builder.LogFail(err, "Can't get jobs: %v")
 
+	res.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(res).Encode(jobs); err != nil {
 		panic(err)
 	}
