@@ -1,11 +1,11 @@
 package main
 
 import (
-	"../../builder"
 	"bufio"
 	"bytes"
 	"encoding/json"
 	"flag"
+	"github.com/qbit/builder"
 	"log"
 	"net/http"
 	"os"
