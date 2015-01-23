@@ -1,10 +1,10 @@
 package main
 
 import (
+	"../../builder"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/qbit/builder"
 	"html/template"
 	"io"
 	"io/ioutil"
