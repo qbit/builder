@@ -2,6 +2,7 @@ package main
 
 import (
 	"../../builder"
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -15,7 +16,7 @@ import (
 	"strings"
 )
 
-func MakePatch(job *builder.Job) string {
+func makePatch(job *builder.Job) string {
 	// Turns out I don't need to do this.
 	// I will keep it around for possible use later
 	randBytes := make([]byte, 16)
@@ -36,7 +37,7 @@ func MakePatch(job *builder.Job) string {
 	return filename
 }
 
-func ApplyPatch(dir string, patch string) bool {
+func applyPatch(dir string, patch string) bool {
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -50,8 +51,10 @@ func ApplyPatch(dir string, patch string) bool {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-	cmd := exec.Command("/usr/bin/patch", "-p0", "-E")
+	cmd := exec.Command("/usr/bin/patch", "-p0", "-E", "-N")
 	cmd.Stdin = strings.NewReader(patch)
+	var out bytes.Buffer
+	cmd.Stdout = &out
 	err = cmd.Start()
 	if err != nil {
 		log.Fatal(err)
@@ -59,13 +62,13 @@ func ApplyPatch(dir string, patch string) bool {
 	log.Printf("Waiting for patching to finish...")
 	err = cmd.Wait()
 	if err != nil {
-		log.Fatalf("Patching errored: %v", err)
+		log.Fatalf("Patching errored: %v, '%s'", err, out)
 	}
 
 	return true
 }
 
-func GetJobs(url *string) builder.Jobs {
+func getJobs(url *string) builder.Jobs {
 	var jobs = builder.Jobs{}
 
 	resp, err := http.Get(*url)
@@ -84,14 +87,13 @@ func GetJobs(url *string) builder.Jobs {
 func main() {
 	var url = flag.String("url", "http://localhost:8001/jobs", "URL of build server")
 	var pdir = flag.String("pdir", "/usr/ports", "PORTSDIR to apply diffs in")
-
 	flag.Parse()
 
-	jobs := GetJobs(url)
+	jobs := getJobs(url)
 	for job := range jobs {
 		//fn := MakePatch(jobs[job])
 		//log.Printf("New Job: %s:%s:%s", jobs[job].Title, jobs[job].Descr, fn)
-		success := ApplyPatch(filepath.Join(*pdir, jobs[job].Port), jobs[job].Diffdata)
+		success := applyPatch(filepath.Join(*pdir, jobs[job].Port), jobs[job].Diffdata)
 		if success {
 			//log.Printf("New Job: %s:%s:%s", jobs[job].Title, jobs[job].Descr, fn)
 			log.Printf("New Job: %s:%s", jobs[job].Title, jobs[job].Descr)

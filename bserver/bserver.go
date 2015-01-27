@@ -60,7 +60,7 @@ $('.codeParent').click(function() {
 </html>
 `
 
-func StatusUpdate(res http.ResponseWriter, req *http.Request) {
+func statusUpdate(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	job := vars["job"]
 	status := vars["status"]
@@ -76,14 +76,12 @@ func StatusUpdate(res http.ResponseWriter, req *http.Request) {
 		log.Fatalf("Can't update status")
 	}
 
-	defer db.Close()
-
 	if err := json.NewEncoder(res).Encode(row); err != nil {
 		panic(err)
 	}
 }
 
-func ShowJobs(res http.ResponseWriter, req *http.Request) {
+func showJobs(res http.ResponseWriter, req *http.Request) {
 	db, err := builder.Connect()
 	defer db.Close()
 	builder.LogFail(err, "Can't connect to DB: %v")
@@ -94,7 +92,7 @@ func ShowJobs(res http.ResponseWriter, req *http.Request) {
 	templ.Execute(res, jobs)
 }
 
-func SendWork(res http.ResponseWriter, req *http.Request) {
+func sendWork(res http.ResponseWriter, req *http.Request) {
 	db, err := builder.Connect()
 	defer db.Close()
 	builder.LogFail(err, "Can't connect to DB: %v")
@@ -109,7 +107,7 @@ func SendWork(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func NewJob(res http.ResponseWriter, req *http.Request) {
+func newJob(res http.ResponseWriter, req *http.Request) {
 	var resp = builder.Resp{}
 	body, err := ioutil.ReadAll(io.LimitReader(req.Body, 1048576))
 	if err := req.Body.Close(); err != nil {
@@ -149,10 +147,10 @@ func NewJob(res http.ResponseWriter, req *http.Request) {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/status/{job}/{status}", StatusUpdate)
-	r.HandleFunc("/new", NewJob).Methods("POST")
-	r.HandleFunc("/jobs", SendWork)
-	r.HandleFunc("/", ShowJobs)
+	r.HandleFunc("/status/{job}/{status}", statusUpdate)
+	r.HandleFunc("/new", newJob).Methods("POST")
+	r.HandleFunc("/jobs", sendWork)
+	r.HandleFunc("/", showJobs)
 
 	http.Handle("/", r)
 	fmt.Println("Listening on :8001")

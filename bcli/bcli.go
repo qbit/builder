@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func AddRemote(url *string, job builder.Job) (int, error) {
+func addRemote(url *string, job builder.Job) (int, error) {
 	j, err := json.Marshal(job)
 	if err != nil {
 		builder.LogFail(err, "Can't marshal job: %v")
@@ -36,7 +36,7 @@ func AddRemote(url *string, job builder.Job) (int, error) {
 	return res.JobID, nil
 }
 
-func AddLocal(job builder.Job, lines []string) (int, error) {
+func addLocal(job builder.Job, lines []string) (int, error) {
 	db, err := builder.Connect()
 	builder.LogFail(err, "Can't connect to DB: %v")
 
@@ -69,7 +69,7 @@ func main() {
 	}
 
 	var job = builder.Job{Title: *title, Descr: *desc, Port: *port, Diffdata: strings.Join(lines, "\n")}
-	jobid, err := AddRemote(url, job)
+	jobid, err := addRemote(url, job)
 	if err != nil {
 		log.Fatalf("Can't blablab")
 	}

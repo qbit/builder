@@ -2,13 +2,15 @@ package builder
 
 import (
 	"database/sql"
+	// pull in postgres
 	_ "github.com/lib/pq"
 	"log"
 	"time"
 )
 
+// Job represents the row in the db
 type Job struct {
-	Id       int
+	ID       int
 	Created  time.Time
 	Title    string
 	Descr    string
@@ -20,15 +22,18 @@ type Job struct {
 	Status   string
 }
 
+// Diff is also a row in the db. Not really needed yet.
 type Diff struct {
 	Diffdata string
 }
 
+// Resp is used for sending job id or errors to the client
 type Resp struct {
 	JobID int
 	Error string
 }
 
+// Jobs for when you need more than one job!
 type Jobs []*Job
 
 /*
@@ -39,12 +44,15 @@ func (jobs *Jobs) New() interface{} {
 }
 */
 
+// LogFail helper function for failing
 func LogFail(err error, msg string) {
 	if err != nil {
 		log.Fatal(msg, err)
 	}
 }
 
+// Connect to the database and return errors if any occure
+// TODO this needs to be non-specific and initiated by the client
 func Connect() (*sql.DB, error) {
 	db, err := sql.Open("postgres", "user=postgres dbname=qbit sslmode=disable")
 	if err != nil {
@@ -53,6 +61,9 @@ func Connect() (*sql.DB, error) {
 	return db, nil
 }
 
+// CreateJob takes a Job and inserts it into the db.
+// TODO need a interface or something to allow for
+// more dynamic assignment of values to struct
 func CreateJob(db *sql.DB, job *Job) (int, error) {
 	// insert diff first, then do this below
 	var id int
@@ -60,13 +71,14 @@ func CreateJob(db *sql.DB, job *Job) (int, error) {
 	return id, err
 }
 
+// CreateDiff inserts a diff into the db
 func CreateDiff(db *sql.DB, diff string) (int, error) {
 	var id int
 	err := db.QueryRow(`INSERT INTO diffs (id, diffdata) values (DEFAULT, $1) RETURNING id`, diff).Scan(&id)
 	return id, err
 }
 
-//func GetJobs(db *sql.DB) (*sql.Rows, error) {
+// GetJobs get a list of active jobs from the db
 func GetJobs(db *sql.DB) (Jobs, error) {
 	var jobs = Jobs{}
 
@@ -93,7 +105,7 @@ active = true`)
 
 	for rows.Next() {
 		var job = Job{}
-		err := rows.Scan(&job.Id, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata, &job.Status)
+		err := rows.Scan(&job.ID, &job.Created, &job.Title, &job.Descr, &job.Port, &job.Diffdata, &job.Status)
 		if err != nil {
 			return nil, err
 		}
