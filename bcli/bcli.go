@@ -37,7 +37,9 @@ func addRemote(url *string, job builder.Job) (int, error) {
 }
 
 func addLocal(job builder.Job, lines []string) (int, error) {
-	db, err := builder.Connect()
+	dbuser, dbpass, dbname := builder.GetCreds()
+
+	db, err := builder.Connect(dbuser, dbpass, dbname)
 	builder.LogFail(err, "Can't connect to DB: %v")
 
 	jobid, err := builder.CreateJob(db, &job)
