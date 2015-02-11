@@ -2,10 +2,13 @@ package builder
 
 import (
 	"database/sql"
-	// pull in postgres
-	_ "github.com/lib/pq"
 	"log"
 	"time"
+
+	// pull in postgres
+	_ "github.com/lib/pq"
+	// pgenv to parse env vars to get pg info
+	"github.com/qbit/pgenv"
 )
 
 // Job represents the row in the db
@@ -51,14 +54,13 @@ func LogFail(err error, msg string) {
 	}
 }
 
-// Connect to the database and return errors if any occure
-// TODO this needs to be non-specific and initiated by the client
+// Connect to the db
 func Connect() (*sql.DB, error) {
-	db, err := sql.Open("postgres", "user=postgres dbname=qbit sslmode=disable")
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	var s = pgenv.ConnStr{}
+	s.SetDefaults()
+	db, err := sql.Open("postgres", s.ToString())
+
+	return db, err
 }
 
 // CreateJob takes a Job and inserts it into the db.
