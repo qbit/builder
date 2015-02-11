@@ -141,8 +141,9 @@ func newJob(w http.ResponseWriter, req *http.Request) {
 
 	resp.JobID = jobid
 
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		http.Error(w, err.Error(), 501)
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		panic(err)
 	}
 }
 
