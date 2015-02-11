@@ -41,7 +41,7 @@ const templateStr = `
 </thead>
 {{range .}}
 <tr>
-   <td>{{.Id}}</td>
+   <td>{{.ID}}</td>
    <td>{{.Title}}</td>
    <td>{{.Descr}}</td>
    <td>{{.Port}}</td>
@@ -81,7 +81,7 @@ func statusUpdate(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func showJobs(res http.ResponseWriter, req *http.Request) {
+func showJobs(w http.ResponseWriter, req *http.Request) {
 	db, err := builder.Connect()
 	defer db.Close()
 	builder.LogFail(err, "Can't connect to DB: %v")
@@ -89,7 +89,10 @@ func showJobs(res http.ResponseWriter, req *http.Request) {
 	jobs, err := builder.GetJobs(db)
 	builder.LogFail(err, "Can't get jobs: %v")
 
-	templ.Execute(res, jobs)
+	err = templ.Execute(w, jobs)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func sendWork(res http.ResponseWriter, req *http.Request) {
@@ -107,7 +110,7 @@ func sendWork(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func newJob(res http.ResponseWriter, req *http.Request) {
+func newJob(w http.ResponseWriter, req *http.Request) {
 	var resp = builder.Resp{}
 	body, err := ioutil.ReadAll(io.LimitReader(req.Body, 1048576))
 	if err := req.Body.Close(); err != nil {
@@ -125,7 +128,6 @@ func newJob(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
-	//	var job = builder.Job{Title: title, Descr: desc, Port: port, Diffdata: diffdata}
 	diffid, err := builder.CreateDiff(db, string(job.Diffdata))
 	if err != nil {
 		resp.Error = err.Error()
@@ -139,8 +141,8 @@ func newJob(res http.ResponseWriter, req *http.Request) {
 
 	resp.JobID = jobid
 
-	if err := json.NewEncoder(res).Encode(resp); err != nil {
-		panic(err)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, err.Error(), 501)
 	}
 }
 
