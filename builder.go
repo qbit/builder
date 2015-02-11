@@ -25,6 +25,9 @@ type Job struct {
 	Status   string
 }
 
+// Jobs for when you need more than one job!
+type Jobs []*Job
+
 // Diff is also a row in the db. Not really needed yet.
 type Diff struct {
 	Diffdata string
@@ -35,17 +38,6 @@ type Resp struct {
 	JobID int
 	Error string
 }
-
-// Jobs for when you need more than one job!
-type Jobs []*Job
-
-/*
-func (jobs *Jobs) New() interface{} {
-	j := &Job{}
-	*jobs = append(*jobs, j)
-	return j
-}
-*/
 
 // LogFail helper function for failing
 func LogFail(err error, msg string) {
